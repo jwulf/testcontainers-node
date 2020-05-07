@@ -35,6 +35,7 @@ import {
 } from "./test-container";
 import { RandomUuid, Uuid } from "./uuid";
 import { HostPortWaitStrategy, WaitStrategy } from "./wait-strategy";
+import { FixedPortClient } from "./port-client";
 
 export class GenericContainerBuilder {
   private buildArgs: BuildArgs = {};
@@ -91,7 +92,8 @@ export class GenericContainer implements TestContainer {
   constructor(
     readonly image: Image,
     readonly tag: Tag = "latest",
-    readonly dockerClientFactory: DockerClientFactory = new DockerodeClientFactory()
+    readonly dockerClientFactory: DockerClientFactory = new DockerodeClientFactory(),
+    readonly mappedPort?: number
   ) {
     this.repoTag = new RepoTag(image, tag);
     this.dockerClient = dockerClientFactory.getClient();
@@ -101,8 +103,8 @@ export class GenericContainer implements TestContainer {
     if (!(await this.hasRepoTagLocally())) {
       await this.dockerClient.pull(this.repoTag, this.authConfig);
     }
-
-    const boundPorts = await new PortBinder().bind(this.ports);
+    const mappedPort = this.mappedPort ? new FixedPortClient([this.mappedPort]) : undefined;
+    const boundPorts = await new PortBinder(mappedPort).bind(this.ports);
     const container = await this.dockerClient.create({
       repoTag: this.repoTag,
       env: this.env,

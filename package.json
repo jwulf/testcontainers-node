@@ -1,5 +1,5 @@
 {
-  "name": "testcontainers",
+  "name": "@sitapati/testcontainers",
   "author": "Cristian Greco",
   "version": "2.8.1",
   "main": "dist/index",
